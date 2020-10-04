@@ -393,20 +393,25 @@ impl FromStr for Coordinate {
 
 impl From<Coordinate> for String {
     fn from(coordinate: Coordinate) -> String {
-        let mut result = String::with_capacity(2);
-        result.push(match coordinate.0 {
-            0 => 'A',
-            1 => 'B',
-            2 => 'C',
+        format!("{}", coordinate)
+    }
+}
+
+impl fmt::Display for Coordinate {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self.0 {
+            0 => write!(f, "A")?,
+            1 => write!(f, "B")?,
+            2 => write!(f, "C")?,
             _ => unreachable!(),
-        });
-        result.push(match coordinate.1 {
-            0 => '1',
-            1 => '2',
-            2 => '3',
+        };
+        match self.1 {
+            0 => write!(f, "1")?,
+            1 => write!(f, "2")?,
+            2 => write!(f, "3")?,
             _ => unreachable!(),
-        });
-        result
+        };
+        Ok(())
     }
 }
 
@@ -487,6 +492,13 @@ mod test_coordinate {
         assert_eq!("A2", &String::from(Coordinate(0, 1)));
         assert_eq!("B3", &String::from(Coordinate(1, 2)));
         assert_eq!("C1", &String::from(Coordinate(2, 0)));
+    }
+
+    #[test]
+    fn display() {
+        assert_eq!("A3", format!("{}", Coordinate(0, 2)));
+        assert_eq!("B1", format!("{}", Coordinate(1, 0)));
+        assert_eq!("C2", format!("{}", Coordinate(2, 1)));
     }
 }
 
