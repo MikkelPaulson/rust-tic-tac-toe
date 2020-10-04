@@ -6,12 +6,11 @@ pub fn run() {
     let mut grid = grid::Grid::empty();
     let mut current_player = Player::X;
 
-    println!("");
-
-    loop {
+    let winner = loop {
+        println!("");
         println!("{}", grid);
 
-        let coordinate: grid::Coordinate = loop {
+        loop {
             println!("");
             println!("Enter {} move:", current_player);
 
@@ -20,16 +19,25 @@ pub fn run() {
 
             buf.pop(); // trim trailing newline
             match buf.parse() {
-                Ok(coordinate) => {
-                    println!("");
-                    break coordinate;
-                }
-                Err(error) => println!("{}", error),
+                Ok(coordinate) => match grid.set_space(coordinate, current_player) {
+                    Ok(()) => break,
+                    Err(e) => println!("{}", e),
+                },
+                Err(e) => println!("{}", e),
             };
-        };
+        }
 
         current_player = current_player.turn();
-    }
+
+        if let Some(winner) = grid.get_winner() {
+            break winner;
+        }
+    };
+
+    println!("");
+    println!("{} wins!", winner);
+    println!("");
+    println!("{}", grid);
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Copy)]
@@ -39,7 +47,7 @@ pub enum Player {
 }
 
 impl Player {
-    pub fn turn(&mut self) -> Self {
+    pub fn turn(&self) -> Self {
         match self {
             Self::X => Self::O,
             Self::O => Self::X,

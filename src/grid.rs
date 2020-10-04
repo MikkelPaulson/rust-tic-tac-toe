@@ -197,10 +197,6 @@ mod test_grid {
 pub struct Line([(Coordinate, Space); 3]);
 
 impl Line {
-    pub fn new(spaces: [(Coordinate, Space); 3]) -> Line {
-        Line(spaces)
-    }
-
     pub fn get_winner(&self) -> Option<Player> {
         let spaces = &self.get_spaces();
         if spaces[0] == spaces[1] && spaces[0] == spaces[2] {
@@ -310,7 +306,7 @@ mod test_line_iterator {
         ]);
 
         assert_eq!(
-            Some(Line::new([
+            Some(Line([
                 (Coordinate(0, 0), Space::O),
                 (Coordinate(1, 0), Space::X),
                 (Coordinate(2, 0), Space::X),
@@ -318,7 +314,7 @@ mod test_line_iterator {
             iterator.next(),
         );
         assert_eq!(
-            Some(Line::new([
+            Some(Line([
                 (Coordinate(0, 1), Space::Empty),
                 (Coordinate(1, 1), Space::X),
                 (Coordinate(2, 1), Space::Empty),
@@ -326,7 +322,7 @@ mod test_line_iterator {
             iterator.next(),
         );
         assert_eq!(
-            Some(Line::new([
+            Some(Line([
                 (Coordinate(0, 2), Space::Empty),
                 (Coordinate(1, 2), Space::Empty),
                 (Coordinate(2, 2), Space::Empty),
@@ -334,7 +330,7 @@ mod test_line_iterator {
             iterator.next(),
         );
         assert_eq!(
-            Some(Line::new([
+            Some(Line([
                 (Coordinate(0, 0), Space::O),
                 (Coordinate(0, 1), Space::Empty),
                 (Coordinate(0, 2), Space::Empty),
@@ -342,7 +338,7 @@ mod test_line_iterator {
             iterator.next(),
         );
         assert_eq!(
-            Some(Line::new([
+            Some(Line([
                 (Coordinate(1, 0), Space::X),
                 (Coordinate(1, 1), Space::X),
                 (Coordinate(1, 2), Space::Empty),
@@ -350,7 +346,7 @@ mod test_line_iterator {
             iterator.next(),
         );
         assert_eq!(
-            Some(Line::new([
+            Some(Line([
                 (Coordinate(2, 0), Space::X),
                 (Coordinate(2, 1), Space::Empty),
                 (Coordinate(2, 2), Space::Empty),
@@ -358,7 +354,7 @@ mod test_line_iterator {
             iterator.next(),
         );
         assert_eq!(
-            Some(Line::new([
+            Some(Line([
                 (Coordinate(0, 0), Space::O),
                 (Coordinate(1, 1), Space::X),
                 (Coordinate(2, 2), Space::Empty),
@@ -366,7 +362,7 @@ mod test_line_iterator {
             iterator.next(),
         );
         assert_eq!(
-            Some(Line::new([
+            Some(Line([
                 (Coordinate(0, 2), Space::Empty),
                 (Coordinate(1, 1), Space::X),
                 (Coordinate(2, 0), Space::X),
