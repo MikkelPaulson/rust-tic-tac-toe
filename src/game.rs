@@ -1,4 +1,3 @@
-use super::Player;
 use std::fmt;
 use std::iter;
 use std::str::FromStr;
@@ -559,6 +558,30 @@ mod test_illegal_move {
             "A2 is not a legal move.",
             &format!("{}", IllegalMove(Coordinate(0, 1))),
         )
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Copy)]
+pub enum Player {
+    X,
+    O,
+}
+
+impl Player {
+    pub fn turn(&self) -> Self {
+        match self {
+            Self::X => Self::O,
+            Self::O => Self::X,
+        }
+    }
+}
+
+impl fmt::Display for Player {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::X => write!(f, "X"),
+            Self::O => write!(f, "O"),
+        }
     }
 }
 

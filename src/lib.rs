@@ -1,9 +1,10 @@
-mod grid;
-use std::fmt;
+mod game;
+
+use game::{Grid, Player};
 use std::io;
 
 pub fn run() {
-    let mut grid = grid::Grid::empty();
+    let mut grid = Grid::empty();
     let mut current_player = Player::X;
 
     let winner = loop {
@@ -38,28 +39,4 @@ pub fn run() {
     println!("{} wins!", winner);
     println!("");
     println!("{}", grid);
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Copy)]
-pub enum Player {
-    X,
-    O,
-}
-
-impl Player {
-    pub fn turn(&self) -> Self {
-        match self {
-            Self::X => Self::O,
-            Self::O => Self::X,
-        }
-    }
-}
-
-impl fmt::Display for Player {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::X => write!(f, "X"),
-            Self::O => write!(f, "O"),
-        }
-    }
 }
