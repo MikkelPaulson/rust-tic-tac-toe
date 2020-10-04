@@ -30,26 +30,6 @@ impl Grid {
         self.get_space(coordinate).get_player() == None
     }
 
-    //     A   B   C
-    //   +---+---+---+
-    // 1 | X |   |   |
-    //   +---+---+---+
-    // 2 |   | X |   |
-    //   +---+---+---+
-    // 3 |   |   | O |
-    //   +---+---+---+
-    pub fn draw(&self) {
-        println!("     A   B   C");
-        println!("   +---+---+---+");
-
-        let mut row_num = 0;
-        for row in self.spaces.iter() {
-            row_num = row_num + 1;
-            println!(" {} | {} | {} | {} |", row_num, row[0], row[1], row[2]);
-            println!("   +---+---+---+");
-        }
-    }
-
     pub fn lines(&self) -> LineIterator {
         LineIterator::new(self.spaces.clone())
     }
@@ -64,9 +44,55 @@ impl Grid {
     }
 }
 
+impl fmt::Display for Grid {
+    //     A   B   C
+    //   +---+---+---+
+    // 1 | X |   |   |
+    //   +---+---+---+
+    // 2 |   | X |   |
+    //   +---+---+---+
+    // 3 |   |   | O |
+    //   +---+---+---+
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "     A   B   C")?;
+        writeln!(f, "   +---+---+---+")?;
+
+        let mut row_num = 0;
+        for row in self.spaces.iter() {
+            row_num = row_num + 1;
+            writeln!(f, " {} | {} | {} | {} |", row_num, row[0], row[1], row[2])?;
+            writeln!(f, "   +---+---+---+")?;
+        }
+
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod test_grid {
-    // TODO: test me
+    use super::{Grid, Space};
+
+    #[test]
+    fn display() {
+        let grid = Grid::new([
+            [Space::O, Space::X, Space::X],
+            [Space::Empty, Space::X, Space::Empty],
+            [Space::Empty, Space::Empty, Space::Empty],
+        ]);
+
+        assert_eq!(
+            "     A   B   C
+   +---+---+---+
+ 1 | O | X | X |
+   +---+---+---+
+ 2 |   | X |   |
+   +---+---+---+
+ 3 |   |   |   |
+   +---+---+---+
+",
+            format!("{}", grid),
+        );
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

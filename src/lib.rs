@@ -9,7 +9,7 @@ pub fn run() {
     println!("");
 
     loop {
-        grid.draw();
+        println!("{}", grid);
 
         let coordinate: grid::Coordinate = loop {
             println!("");
