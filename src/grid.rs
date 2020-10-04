@@ -70,10 +70,10 @@ mod test_grid {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct Line([Space; 3]);
+pub struct Line([(Coordinate, Space); 3]);
 
 impl Line {
-    pub fn new(spaces: [Space; 3]) -> Line {
+    pub fn new(spaces: [(Coordinate, Space); 3]) -> Line {
         Line(spaces)
     }
 
@@ -87,30 +87,38 @@ impl Line {
     }
 
     fn get_spaces(&self) -> [Space; 3] {
-        [self.0[0], self.0[1], self.0[2]]
+        [self.0[0].1, self.0[1].1, self.0[2].1]
     }
 }
 
 #[cfg(test)]
 mod test_line {
-    use super::{Line, Player, Space};
+    use super::{Coordinate, Line, Player, Space};
+
+    fn get_line(spaces: [Space; 3]) -> Line {
+        Line([
+            (Coordinate(0, 0), spaces[0]),
+            (Coordinate(1, 0), spaces[1]),
+            (Coordinate(2, 0), spaces[2]),
+        ])
+    }
 
     #[test]
     fn get_winner() {
-        assert_eq!(None, Line([Space::O, Space::O, Space::X]).get_winner());
-        assert_eq!(None, Line([Space::O, Space::X, Space::O]).get_winner());
-        assert_eq!(None, Line([Space::X, Space::O, Space::O]).get_winner());
+        assert_eq!(None, get_line([Space::O, Space::O, Space::X]).get_winner());
+        assert_eq!(None, get_line([Space::O, Space::X, Space::O]).get_winner());
+        assert_eq!(None, get_line([Space::X, Space::O, Space::O]).get_winner());
         assert_eq!(
             None,
-            Line([Space::Empty, Space::Empty, Space::Empty]).get_winner(),
+            get_line([Space::Empty, Space::Empty, Space::Empty]).get_winner(),
         );
         assert_eq!(
             Some(Player::X),
-            Line([Space::X, Space::X, Space::X]).get_winner(),
+            get_line([Space::X, Space::X, Space::X]).get_winner(),
         );
         assert_eq!(
             Some(Player::O),
-            Line([Space::O, Space::O, Space::O]).get_winner(),
+            get_line([Space::O, Space::O, Space::O]).get_winner(),
         );
     }
 }
@@ -143,11 +151,14 @@ impl iter::Iterator for LineIterator {
     fn next(&mut self) -> Option<Self::Item> {
         if self.counter < Self::LINE_PROFILES.len() {
             let profile = Self::LINE_PROFILES[self.counter];
-            self.counter = self.counter + 1;
+            let x = [profile[0][0], profile[1][0], profile[2][0]];
+            let y = [profile[0][1], profile[1][1], profile[2][1]];
+            self.counter += 1;
+
             Some(Line([
-                self.spaces[profile[0][1]][profile[0][0]],
-                self.spaces[profile[1][1]][profile[1][0]],
-                self.spaces[profile[2][1]][profile[2][0]],
+                (Coordinate(x[0], y[0]), self.spaces[y[0]][x[0]]),
+                (Coordinate(x[1], y[1]), self.spaces[y[1]][x[1]]),
+                (Coordinate(x[2], y[2]), self.spaces[y[2]][x[2]]),
             ]))
         } else {
             None
@@ -163,7 +174,7 @@ impl iter::ExactSizeIterator for LineIterator {}
 
 #[cfg(test)]
 mod test_line_iterator {
-    use super::{Line, LineIterator, Space};
+    use super::{Coordinate, Grid, Line, LineIterator, Space};
 
     #[test]
     fn test_iterator() {
@@ -175,47 +186,80 @@ mod test_line_iterator {
         ]);
 
         assert_eq!(
-            Some(Line::new([Space::O, Space::X, Space::X])),
+            Some(Line::new([
+                (Coordinate(0, 0), Space::O),
+                (Coordinate(1, 0), Space::X),
+                (Coordinate(2, 0), Space::X),
+            ])),
             iterator.next(),
         );
         assert_eq!(
-            Some(Line::new([Space::Empty, Space::X, Space::Empty])),
+            Some(Line::new([
+                (Coordinate(0, 1), Space::Empty),
+                (Coordinate(1, 1), Space::X),
+                (Coordinate(2, 1), Space::Empty),
+            ])),
             iterator.next(),
         );
         assert_eq!(
-            Some(Line::new([Space::Empty, Space::Empty, Space::Empty])),
+            Some(Line::new([
+                (Coordinate(0, 2), Space::Empty),
+                (Coordinate(1, 2), Space::Empty),
+                (Coordinate(2, 2), Space::Empty),
+            ])),
             iterator.next(),
         );
         assert_eq!(
-            Some(Line::new([Space::O, Space::Empty, Space::Empty])),
+            Some(Line::new([
+                (Coordinate(0, 0), Space::O),
+                (Coordinate(0, 1), Space::Empty),
+                (Coordinate(0, 2), Space::Empty),
+            ])),
             iterator.next(),
         );
         assert_eq!(
-            Some(Line::new([Space::X, Space::X, Space::Empty])),
+            Some(Line::new([
+                (Coordinate(1, 0), Space::X),
+                (Coordinate(1, 1), Space::X),
+                (Coordinate(1, 2), Space::Empty),
+            ])),
             iterator.next(),
         );
         assert_eq!(
-            Some(Line::new([Space::X, Space::Empty, Space::Empty])),
+            Some(Line::new([
+                (Coordinate(2, 0), Space::X),
+                (Coordinate(2, 1), Space::Empty),
+                (Coordinate(2, 2), Space::Empty),
+            ])),
             iterator.next(),
         );
         assert_eq!(
-            Some(Line::new([Space::O, Space::X, Space::Empty])),
+            Some(Line::new([
+                (Coordinate(0, 0), Space::O),
+                (Coordinate(1, 1), Space::X),
+                (Coordinate(2, 2), Space::Empty),
+            ])),
             iterator.next(),
         );
         assert_eq!(
-            Some(Line::new([Space::Empty, Space::X, Space::X])),
+            Some(Line::new([
+                (Coordinate(0, 2), Space::Empty),
+                (Coordinate(1, 1), Space::X),
+                (Coordinate(2, 0), Space::X),
+            ])),
             iterator.next(),
         );
+        assert_eq!(None, iterator.next());
         assert_eq!(None, iterator.next());
     }
 
     #[test]
     fn test_exact_size_iterator() {
-        assert_eq!(8, LineIterator::new([[Space::Empty; 3]; 3]).len());
+        assert_eq!(8, Grid::empty().lines().len());
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Coordinate(usize, usize);
 
 impl FromStr for Coordinate {
@@ -372,7 +416,7 @@ pub enum Space {
 }
 
 impl Space {
-    pub fn new(player: Option<Player>) -> Space {
+    pub fn new(player: &Option<Player>) -> Space {
         match player {
             Some(Player::X) => Space::X,
             Some(Player::O) => Space::O,
@@ -405,9 +449,9 @@ mod test_space {
 
     #[test]
     fn new() {
-        assert_eq!(Space::X, Space::new(Some(Player::X)));
-        assert_eq!(Space::O, Space::new(Some(Player::O)));
-        assert_eq!(Space::Empty, Space::new(None));
+        assert_eq!(Space::X, Space::new(&Some(Player::X)));
+        assert_eq!(Space::O, Space::new(&Some(Player::O)));
+        assert_eq!(Space::Empty, Space::new(&None));
     }
 
     #[test]
