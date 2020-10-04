@@ -3,6 +3,7 @@ use std::fmt;
 use std::iter;
 use std::str::FromStr;
 
+#[derive(Debug, PartialEq, Eq)]
 pub struct Grid {
     spaces: [[Space; 3]; 3],
 }
@@ -13,13 +14,11 @@ impl Grid {
     }
 
     pub fn empty() -> Grid {
-        Grid {
-            spaces: [
-                [Space::Empty, Space::Empty, Space::Empty],
-                [Space::Empty, Space::Empty, Space::Empty],
-                [Space::Empty, Space::Empty, Space::Empty],
-            ],
-        }
+        Grid::new([
+            [Space::Empty, Space::Empty, Space::Empty],
+            [Space::Empty, Space::Empty, Space::Empty],
+            [Space::Empty, Space::Empty, Space::Empty],
+        ])
     }
 
     pub fn get_space(&self, coordinate: Coordinate) -> Space {
@@ -70,7 +69,86 @@ impl fmt::Display for Grid {
 
 #[cfg(test)]
 mod test_grid {
-    use super::{Grid, Space};
+    use super::{Coordinate, Grid, Line, Player, Space};
+
+    #[test]
+    fn empty() {
+        assert_eq!(
+            Grid {
+                spaces: [
+                    [Space::Empty, Space::Empty, Space::Empty],
+                    [Space::Empty, Space::Empty, Space::Empty],
+                    [Space::Empty, Space::Empty, Space::Empty],
+                ]
+            },
+            Grid::empty(),
+        );
+    }
+
+    #[test]
+    fn get_space() {
+        assert_eq!(
+            Space::X,
+            Grid::new([
+                [Space::Empty, Space::X, Space::Empty],
+                [Space::Empty, Space::Empty, Space::Empty],
+                [Space::Empty, Space::Empty, Space::Empty],
+            ])
+            .get_space(Coordinate(1, 0)),
+        );
+    }
+
+    #[test]
+    fn is_legal() {
+        let grid = Grid::new([
+            [Space::Empty, Space::X, Space::Empty],
+            [Space::Empty, Space::Empty, Space::Empty],
+            [Space::Empty, Space::Empty, Space::Empty],
+        ]);
+
+        assert_eq!(true, grid.is_legal(Coordinate(0, 1)));
+        assert_eq!(false, grid.is_legal(Coordinate(1, 0)));
+    }
+
+    #[test]
+    fn lines() {
+        assert_eq!(
+            Some(Line([
+                (Coordinate(0, 0), Space::O),
+                (Coordinate(1, 0), Space::X),
+                (Coordinate(2, 0), Space::O),
+            ])),
+            Grid::new([
+                [Space::O, Space::X, Space::O],
+                [Space::Empty, Space::Empty, Space::Empty],
+                [Space::Empty, Space::Empty, Space::Empty],
+            ])
+            .lines()
+            .next()
+        );
+    }
+
+    #[test]
+    fn get_winner() {
+        assert_eq!(
+            None,
+            Grid::new([
+                [Space::O, Space::X, Space::X],
+                [Space::Empty, Space::O, Space::Empty],
+                [Space::Empty, Space::Empty, Space::X],
+            ])
+            .get_winner(),
+        );
+        assert_eq!(
+            Some(Player::O),
+            Grid::new([
+                [Space::O, Space::X, Space::X],
+                [Space::Empty, Space::O, Space::Empty],
+                [Space::Empty, Space::Empty, Space::O],
+            ])
+            .get_winner(),
+        );
+    }
 
     #[test]
     fn display() {
