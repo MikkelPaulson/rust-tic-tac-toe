@@ -29,6 +29,15 @@ impl Grid {
         self.get_space(coordinate).get_player() == None
     }
 
+    pub fn set_space(&mut self, coordinate: Coordinate, player: Player) -> Result<(), IllegalMove> {
+        if self.is_legal(coordinate) {
+            self.spaces[coordinate.1][coordinate.0] = Space::new(&Some(player));
+            Ok(())
+        } else {
+            Err(IllegalMove(coordinate))
+        }
+    }
+
     pub fn lines(&self) -> LineIterator {
         LineIterator::new(self.spaces.clone())
     }
@@ -69,7 +78,7 @@ impl fmt::Display for Grid {
 
 #[cfg(test)]
 mod test_grid {
-    use super::{Coordinate, Grid, Line, Player, Space};
+    use super::{Coordinate, Grid, IllegalMove, Line, Player, Space};
 
     #[test]
     fn empty() {
@@ -108,6 +117,17 @@ mod test_grid {
 
         assert_eq!(true, grid.is_legal(Coordinate(0, 1)));
         assert_eq!(false, grid.is_legal(Coordinate(1, 0)));
+    }
+
+    #[test]
+    fn set_space() {
+        let mut grid = Grid::empty();
+        assert_eq!(Ok(()), grid.set_space(Coordinate(0, 2), Player::X));
+        assert_eq!(
+            Err(IllegalMove(Coordinate(0, 2))),
+            grid.set_space(Coordinate(0, 2), Player::O),
+        );
+        assert_eq!(Ok(()), grid.set_space(Coordinate(2, 0), Player::O));
     }
 
     #[test]
@@ -521,6 +541,28 @@ mod test_parse_coordinate_error {
             &format!("{}", ParseCoordinateError("foo".to_string())),
             "Invalid coordinate: foo (expected format: A1)"
         );
+    }
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct IllegalMove(Coordinate);
+
+impl fmt::Display for IllegalMove {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{} is not a legal move.", self.0)
+    }
+}
+
+#[cfg(test)]
+mod test_illegal_move {
+    use super::{Coordinate, IllegalMove};
+
+    #[test]
+    fn display() {
+        assert_eq!(
+            "A2 is not a legal move.",
+            &format!("{}", IllegalMove(Coordinate(0, 1))),
+        )
     }
 }
 
