@@ -8,7 +8,11 @@ pub struct Grid {
 }
 
 impl Grid {
-    pub fn new() -> Grid {
+    pub fn new(spaces: [[Space; 3]; 3]) -> Grid {
+        Grid { spaces }
+    }
+
+    pub fn empty() -> Grid {
         Grid {
             spaces: [
                 [Space::Empty, Space::Empty, Space::Empty],
@@ -65,21 +69,50 @@ mod test_grid {
     // TODO: test me
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Line([Space; 3]);
 
 impl Line {
+    pub fn new(spaces: [Space; 3]) -> Line {
+        Line(spaces)
+    }
+
     pub fn get_winner(&self) -> Option<Player> {
-        if self.0[0] == self.0[1] && self.0[0] == self.0[2] {
-            self.0[0].get_player()
+        let spaces = &self.get_spaces();
+        if spaces[0] == spaces[1] && spaces[0] == spaces[2] {
+            spaces[0].get_player()
         } else {
             None
         }
+    }
+
+    fn get_spaces(&self) -> [Space; 3] {
+        [self.0[0], self.0[1], self.0[2]]
     }
 }
 
 #[cfg(test)]
 mod test_line {
-    // TODO: test me
+    use super::{Line, Player, Space};
+
+    #[test]
+    fn get_winner() {
+        assert_eq!(None, Line([Space::O, Space::O, Space::X]).get_winner());
+        assert_eq!(None, Line([Space::O, Space::X, Space::O]).get_winner());
+        assert_eq!(None, Line([Space::X, Space::O, Space::O]).get_winner());
+        assert_eq!(
+            None,
+            Line([Space::Empty, Space::Empty, Space::Empty]).get_winner(),
+        );
+        assert_eq!(
+            Some(Player::X),
+            Line([Space::X, Space::X, Space::X]).get_winner(),
+        );
+        assert_eq!(
+            Some(Player::O),
+            Line([Space::O, Space::O, Space::O]).get_winner(),
+        );
+    }
 }
 
 pub struct LineIterator {
@@ -112,9 +145,9 @@ impl iter::Iterator for LineIterator {
             let profile = Self::LINE_PROFILES[self.counter];
             self.counter = self.counter + 1;
             Some(Line([
-                self.spaces[profile[0][0]][profile[0][1]],
-                self.spaces[profile[1][0]][profile[1][1]],
-                self.spaces[profile[2][0]][profile[2][1]],
+                self.spaces[profile[0][1]][profile[0][0]],
+                self.spaces[profile[1][1]][profile[1][0]],
+                self.spaces[profile[2][1]][profile[2][0]],
             ]))
         } else {
             None
@@ -130,7 +163,56 @@ impl iter::ExactSizeIterator for LineIterator {}
 
 #[cfg(test)]
 mod test_line_iterator {
-    // TODO: test me
+    use super::{Line, LineIterator, Space};
+
+    #[test]
+    fn test_iterator() {
+        // This grid should be identifiably different for each line
+        let mut iterator = LineIterator::new([
+            [Space::O, Space::X, Space::X],
+            [Space::Empty, Space::X, Space::Empty],
+            [Space::Empty, Space::Empty, Space::Empty],
+        ]);
+
+        assert_eq!(
+            Some(Line::new([Space::O, Space::X, Space::X])),
+            iterator.next(),
+        );
+        assert_eq!(
+            Some(Line::new([Space::Empty, Space::X, Space::Empty])),
+            iterator.next(),
+        );
+        assert_eq!(
+            Some(Line::new([Space::Empty, Space::Empty, Space::Empty])),
+            iterator.next(),
+        );
+        assert_eq!(
+            Some(Line::new([Space::O, Space::Empty, Space::Empty])),
+            iterator.next(),
+        );
+        assert_eq!(
+            Some(Line::new([Space::X, Space::X, Space::Empty])),
+            iterator.next(),
+        );
+        assert_eq!(
+            Some(Line::new([Space::X, Space::Empty, Space::Empty])),
+            iterator.next(),
+        );
+        assert_eq!(
+            Some(Line::new([Space::O, Space::X, Space::Empty])),
+            iterator.next(),
+        );
+        assert_eq!(
+            Some(Line::new([Space::Empty, Space::X, Space::X])),
+            iterator.next(),
+        );
+        assert_eq!(None, iterator.next());
+    }
+
+    #[test]
+    fn test_exact_size_iterator() {
+        assert_eq!(8, LineIterator::new([[Space::Empty; 3]; 3]).len());
+    }
 }
 
 #[derive(Debug, PartialEq, Eq)]

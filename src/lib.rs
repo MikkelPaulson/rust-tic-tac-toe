@@ -3,7 +3,7 @@ use std::fmt;
 use std::io;
 
 pub fn run() {
-    let mut grid = grid::Grid::new();
+    let mut grid = grid::Grid::empty();
     let mut current_player = Player::X;
 
     println!("");
