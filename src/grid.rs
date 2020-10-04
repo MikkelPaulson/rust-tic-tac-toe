@@ -11,9 +11,9 @@ impl Grid {
     pub fn new() -> Grid {
         Grid {
             spaces: [
-                [Space(None), Space(None), Space(None)],
-                [Space(None), Space(None), Space(None)],
-                [Space(None), Space(None), Space(None)],
+                [Space::Empty, Space::Empty, Space::Empty],
+                [Space::Empty, Space::Empty, Space::Empty],
+                [Space::Empty, Space::Empty, Space::Empty],
             ],
         }
     }
@@ -283,23 +283,36 @@ mod test_parse_coordinate_error {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Space(Option<Player>);
+pub enum Space {
+    X,
+    O,
+    Empty,
+}
 
 impl Space {
     pub fn new(player: Option<Player>) -> Space {
-        Space(player)
+        match player {
+            Some(Player::X) => Space::X,
+            Some(Player::O) => Space::O,
+            None => Space::Empty,
+        }
     }
 
     pub fn get_player(&self) -> Option<Player> {
-        self.0
+        match self {
+            Space::X => Some(Player::X),
+            Space::O => Some(Player::O),
+            Space::Empty => None,
+        }
     }
 }
 
 impl fmt::Display for Space {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match &self.0 {
-            Some(player) => write!(f, "{}", player),
-            None => write!(f, " "),
+        match &self {
+            Space::X => write!(f, "X"),
+            Space::O => write!(f, "O"),
+            Space::Empty => write!(f, " "),
         }
     }
 }
@@ -309,9 +322,23 @@ mod test_space {
     use super::{Player, Space};
 
     #[test]
-    fn format() {
-        assert_eq!(&format!("{}", Space(Some(Player::X))), "X");
-        assert_eq!(&format!("{}", Space(Some(Player::O))), "O");
-        assert_eq!(&format!("{}", Space(None)), " ");
+    fn new() {
+        assert_eq!(Space::X, Space::new(Some(Player::X)));
+        assert_eq!(Space::O, Space::new(Some(Player::O)));
+        assert_eq!(Space::Empty, Space::new(None));
+    }
+
+    #[test]
+    fn get_player() {
+        assert_eq!(Some(Player::X), Space::X.get_player());
+        assert_eq!(Some(Player::O), Space::O.get_player());
+        assert_eq!(None, Space::Empty.get_player());
+    }
+
+    #[test]
+    fn display() {
+        assert_eq!("X", &format!("{}", Space::X));
+        assert_eq!("O", &format!("{}", Space::O));
+        assert_eq!(" ", &format!("{}", Space::Empty));
     }
 }
