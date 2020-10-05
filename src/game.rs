@@ -2,7 +2,7 @@ use std::fmt;
 use std::iter;
 use std::str::FromStr;
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Grid {
     spaces: [[Space; 3]; 3],
 }

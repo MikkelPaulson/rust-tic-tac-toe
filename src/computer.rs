@@ -15,6 +15,14 @@ impl ComputerPlayer {
     }
 }
 
+impl ComputerPlayer {
+    fn try_move(&self, grid: &Grid, coordinate: &Coordinate, player: &Player) -> Grid {
+        let mut grid = grid.clone();
+        grid.set_space(coordinate, player);
+        grid
+    }
+}
+
 impl Playable for ComputerPlayer {
     fn play(&mut self, grid: &Grid) -> Coordinate {
         let mut legal_moves = Vec::with_capacity(9);
@@ -27,9 +35,30 @@ impl Playable for ComputerPlayer {
             }
         }
 
-        let coordinate = legal_moves.choose(&mut self.rng).expect("No legal moves!");
+        let coordinate = None
+            .or_else(|| {
+                for coordinate in &legal_moves {
+                    if let Some(_) = self.try_move(&grid, &coordinate, &self.player).get_winner() {
+                        return Some(coordinate);
+                    }
+                }
+                None
+            })
+            .or_else(|| {
+                let other_player = self.player.turn();
+                for coordinate in &legal_moves {
+                    if let Some(_) = self
+                        .try_move(&grid, &coordinate, &other_player)
+                        .get_winner()
+                    {
+                        return Some(coordinate);
+                    }
+                }
+                None
+            })
+            .or_else(|| legal_moves.choose(&mut self.rng))
+            .expect("No legal moves!");
 
-        println!("");
         println!("{} chooses {}", self.player, coordinate);
         println!("");
 
