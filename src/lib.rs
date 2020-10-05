@@ -26,7 +26,7 @@ pub fn run() {
         let player = &players[&current_player];
 
         let coordinate = player.play(&grid);
-        grid.set_space(coordinate, current_player)
+        grid.set_space(&coordinate, &current_player)
             .expect("Illegal move!");
 
         if let Some(winner) = grid.get_winner() {

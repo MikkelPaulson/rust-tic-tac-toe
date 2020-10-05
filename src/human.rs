@@ -23,7 +23,7 @@ impl Playable for HumanPlayer {
 
             buf.pop(); // trim trailing newline
             match buf.parse() {
-                Ok(coordinate) => match grid.try_legal(coordinate) {
+                Ok(coordinate) => match grid.try_legal(&coordinate) {
                     Ok(()) => break coordinate,
                     Err(e) => println!("{}", e),
                 },

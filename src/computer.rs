@@ -16,7 +16,7 @@ impl Playable for ComputerPlayer {
         for x in 0..=2 {
             for y in 0..=2 {
                 let coordinate = Coordinate::new(x, y);
-                if grid.is_legal(coordinate) {
+                if grid.is_legal(&coordinate) {
                     legal_moves.push(coordinate);
                 }
             }

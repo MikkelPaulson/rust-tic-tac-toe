@@ -20,25 +20,29 @@ impl Grid {
         ])
     }
 
-    pub fn get_space(&self, coordinate: Coordinate) -> Space {
+    pub fn get_space(&self, coordinate: &Coordinate) -> Space {
         self.spaces[coordinate.1][coordinate.0]
     }
 
-    pub fn is_legal(&self, coordinate: Coordinate) -> bool {
+    pub fn is_legal(&self, coordinate: &Coordinate) -> bool {
         self.get_space(coordinate).get_player() == None
     }
 
-    pub fn try_legal(&self, coordinate: Coordinate) -> Result<(), IllegalMove> {
+    pub fn try_legal(&self, coordinate: &Coordinate) -> Result<(), IllegalMove> {
         if self.is_legal(coordinate) {
             Ok(())
         } else {
-            Err(IllegalMove(coordinate))
+            Err(IllegalMove(*coordinate))
         }
     }
 
-    pub fn set_space(&mut self, coordinate: Coordinate, player: Player) -> Result<(), IllegalMove> {
+    pub fn set_space(
+        &mut self,
+        coordinate: &Coordinate,
+        player: &Player,
+    ) -> Result<(), IllegalMove> {
         self.try_legal(coordinate)
-            .map(|_| self.spaces[coordinate.1][coordinate.0] = Space::new(&Some(player)))
+            .map(|_| self.spaces[coordinate.1][coordinate.0] = Space::new(Some(player)))
     }
 
     pub fn lines(&self) -> LineIterator {
@@ -57,7 +61,7 @@ impl Grid {
     pub fn has_legal_moves(&self) -> bool {
         for x in 0..=2 {
             for y in 0..=2 {
-                if self.is_legal(Coordinate::new(x, y)) {
+                if self.is_legal(&Coordinate::new(x, y)) {
                     return true;
                 }
             }
@@ -117,7 +121,7 @@ mod test_grid {
                 [Space::Empty, Space::Empty, Space::Empty],
                 [Space::Empty, Space::Empty, Space::Empty],
             ])
-            .get_space(Coordinate(1, 0)),
+            .get_space(&Coordinate(1, 0)),
         );
     }
 
@@ -129,19 +133,19 @@ mod test_grid {
             [Space::Empty, Space::Empty, Space::Empty],
         ]);
 
-        assert_eq!(true, grid.is_legal(Coordinate(0, 1)));
-        assert_eq!(false, grid.is_legal(Coordinate(1, 0)));
+        assert_eq!(true, grid.is_legal(&Coordinate(0, 1)));
+        assert_eq!(false, grid.is_legal(&Coordinate(1, 0)));
     }
 
     #[test]
     fn set_space() {
         let mut grid = Grid::empty();
-        assert_eq!(Ok(()), grid.set_space(Coordinate(0, 2), Player::X));
+        assert_eq!(Ok(()), grid.set_space(&Coordinate(0, 2), &Player::X));
         assert_eq!(
             Err(IllegalMove(Coordinate(0, 2))),
-            grid.set_space(Coordinate(0, 2), Player::O),
+            grid.set_space(&Coordinate(0, 2), &Player::O),
         );
-        assert_eq!(Ok(()), grid.set_space(Coordinate(2, 0), Player::O));
+        assert_eq!(Ok(()), grid.set_space(&Coordinate(2, 0), &Player::O));
     }
 
     #[test]
@@ -614,7 +618,7 @@ pub enum Space {
 }
 
 impl Space {
-    pub fn new(player: &Option<Player>) -> Space {
+    pub fn new(player: Option<&Player>) -> Space {
         match player {
             Some(Player::X) => Space::X,
             Some(Player::O) => Space::O,
@@ -647,9 +651,9 @@ mod test_space {
 
     #[test]
     fn new() {
-        assert_eq!(Space::X, Space::new(&Some(Player::X)));
-        assert_eq!(Space::O, Space::new(&Some(Player::O)));
-        assert_eq!(Space::Empty, Space::new(&None));
+        assert_eq!(Space::X, Space::new(Some(&Player::X)));
+        assert_eq!(Space::O, Space::new(Some(&Player::O)));
+        assert_eq!(Space::Empty, Space::new(None));
     }
 
     #[test]
