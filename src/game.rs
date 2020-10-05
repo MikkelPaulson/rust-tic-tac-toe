@@ -28,13 +28,17 @@ impl Grid {
         self.get_space(coordinate).get_player() == None
     }
 
-    pub fn set_space(&mut self, coordinate: Coordinate, player: Player) -> Result<(), IllegalMove> {
+    pub fn try_legal(&self, coordinate: Coordinate) -> Result<(), IllegalMove> {
         if self.is_legal(coordinate) {
-            self.spaces[coordinate.1][coordinate.0] = Space::new(&Some(player));
             Ok(())
         } else {
             Err(IllegalMove(coordinate))
         }
+    }
+
+    pub fn set_space(&mut self, coordinate: Coordinate, player: Player) -> Result<(), IllegalMove> {
+        self.try_legal(coordinate)
+            .map(|_| self.spaces[coordinate.1][coordinate.0] = Space::new(&Some(player)))
     }
 
     pub fn lines(&self) -> LineIterator {
@@ -561,7 +565,7 @@ mod test_illegal_move {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Player {
     X,
     O,
