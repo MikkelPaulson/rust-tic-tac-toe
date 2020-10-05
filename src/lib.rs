@@ -1,7 +1,10 @@
+mod computer;
 mod game;
 mod human;
 
+use computer::ComputerPlayer;
 use game::{Coordinate, Grid, Player};
+use human::HumanPlayer;
 use std::boxed::Box;
 use std::collections::HashMap;
 use std::io;
@@ -12,10 +15,10 @@ pub fn run() {
     let mut players: HashMap<Player, Box<dyn Playable>> = HashMap::with_capacity(2);
 
     // Ready player one
-    players.insert(Player::X, Box::new(human::HumanPlayer::new(Player::X)));
+    players.insert(Player::X, Box::new(ComputerPlayer::new(Player::X)));
 
     // Ready player two
-    players.insert(Player::O, Box::new(human::HumanPlayer::new(Player::O)));
+    players.insert(Player::O, Box::new(ComputerPlayer::new(Player::O)));
 
     let mut current_player = Player::X;
 
