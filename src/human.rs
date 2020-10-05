@@ -12,7 +12,7 @@ impl HumanPlayer {
 }
 
 impl Playable for HumanPlayer {
-    fn play(&self, grid: &Grid) -> Coordinate {
+    fn play(&mut self, grid: &Grid) -> Coordinate {
         loop {
             println!("{}", grid);
             println!("");

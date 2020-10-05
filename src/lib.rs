@@ -12,20 +12,21 @@ use std::io;
 pub fn run() {
     let mut grid = Grid::empty();
 
-    let mut players: HashMap<Player, Box<dyn Playable>> = HashMap::with_capacity(2);
-
     // Ready player one
-    players.insert(Player::X, Box::new(ComputerPlayer::new(Player::X)));
+    let mut player_x = ComputerPlayer::new(Player::X);
 
     // Ready player two
-    players.insert(Player::O, Box::new(ComputerPlayer::new(Player::O)));
+    let mut player_o = ComputerPlayer::new(Player::O);
 
     let mut current_player = Player::X;
 
     let outcome = loop {
-        let player = &players[&current_player];
+        let coordinate = match current_player {
+            Player::X => &mut player_x,
+            Player::O => &mut player_o,
+        }
+        .play(&grid);
 
-        let coordinate = player.play(&grid);
         grid.set_space(&coordinate, &current_player)
             .expect("Illegal move!");
 
@@ -51,5 +52,5 @@ pub fn run() {
 }
 
 trait Playable {
-    fn play(&self, grid: &Grid) -> Coordinate;
+    fn play(&mut self, grid: &Grid) -> Coordinate;
 }

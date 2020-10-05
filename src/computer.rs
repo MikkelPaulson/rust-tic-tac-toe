@@ -11,7 +11,7 @@ impl ComputerPlayer {
 }
 
 impl Playable for ComputerPlayer {
-    fn play(&self, grid: &Grid) -> Coordinate {
+    fn play(&mut self, grid: &Grid) -> Coordinate {
         let mut legal_moves = Vec::with_capacity(9);
         for x in 0..=2 {
             for y in 0..=2 {
