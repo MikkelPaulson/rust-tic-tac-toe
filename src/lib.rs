@@ -19,21 +19,30 @@ pub fn run() {
 
     let mut current_player = Player::X;
 
-    let winner = loop {
+    let outcome = loop {
         let player = &players[&current_player];
 
         let coordinate = player.play(&grid);
         grid.set_space(coordinate, current_player)
             .expect("Illegal move!");
+
         if let Some(winner) = grid.get_winner() {
-            break winner;
+            break Some(winner);
+        } else if !grid.has_legal_moves() {
+            break None;
         }
 
         current_player = current_player.turn();
     };
 
     println!("");
-    println!("{} wins!", winner);
+
+    if let Some(winner) = outcome {
+        println!("{} wins!", winner);
+    } else {
+        println!("The game ended in a draw!");
+    }
+
     println!("");
     println!("{}", grid);
 }

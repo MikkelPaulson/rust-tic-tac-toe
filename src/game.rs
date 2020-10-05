@@ -53,6 +53,17 @@ impl Grid {
         }
         None
     }
+
+    pub fn has_legal_moves(&self) -> bool {
+        for x in 0..=2 {
+            for y in 0..=2 {
+                if self.is_legal(Coordinate::new(x, y)) {
+                    return true;
+                }
+            }
+        }
+        false
+    }
 }
 
 impl fmt::Display for Grid {
@@ -384,6 +395,12 @@ mod test_line_iterator {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Coordinate(usize, usize);
+
+impl Coordinate {
+    pub fn new(x: usize, y: usize) -> Coordinate {
+        Coordinate(x, y)
+    }
+}
 
 impl FromStr for Coordinate {
     type Err = ParseCoordinateError;
