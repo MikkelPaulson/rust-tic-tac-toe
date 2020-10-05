@@ -1,12 +1,17 @@
 use super::{Coordinate, Grid, Playable, Player};
+use rand::prelude::*;
 
 pub struct ComputerPlayer {
     player: Player,
+    rng: ThreadRng,
 }
 
 impl ComputerPlayer {
     pub fn new(player: Player) -> Self {
-        Self { player }
+        Self {
+            player,
+            rng: thread_rng(),
+        }
     }
 }
 
@@ -22,10 +27,12 @@ impl Playable for ComputerPlayer {
             }
         }
 
+        let coordinate = legal_moves.choose(&mut self.rng).expect("No legal moves!");
+
         println!("");
-        println!("{} chooses {}", self.player, legal_moves[0]);
+        println!("{} chooses {}", self.player, coordinate);
         println!("");
 
-        legal_moves[0]
+        *coordinate
     }
 }
