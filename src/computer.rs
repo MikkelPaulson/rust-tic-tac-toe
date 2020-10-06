@@ -44,6 +44,7 @@ impl ComputerPlayer {
                 }
             }
             if fork_count > 1 {
+                println!("{} can set up a fork by playing {}", player, coordinate);
                 return Some(*coordinate);
             }
         }
@@ -62,6 +63,7 @@ impl ComputerPlayer {
                 .get_winner()
                 .is_some()
             {
+                println!("{} can win by playing {}", player, coordinate);
                 return Some(*coordinate);
             }
         }
