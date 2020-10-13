@@ -4,6 +4,7 @@ use rand::prelude::*;
 pub struct ComputerPlayer {
     player: Player,
     rng: ThreadRng,
+    verbosity: u8,
 }
 
 impl ComputerPlayer {
@@ -11,15 +12,56 @@ impl ComputerPlayer {
         Self {
             player,
             rng: thread_rng(),
+            verbosity: 1,
         }
     }
-}
 
-impl ComputerPlayer {
+    pub fn new_verbose(player: Player) -> Self {
+        Self {
+            player,
+            rng: thread_rng(),
+            verbosity: 2,
+        }
+    }
+
+    pub fn new_silent(player: Player) -> Self {
+        Self {
+            player,
+            rng: thread_rng(),
+            verbosity: 0,
+        }
+    }
+
     fn try_move(&self, grid: &Grid, coordinate: &Coordinate, player: &Player) -> Grid {
         let mut grid = grid.clone();
         grid.set_space(coordinate, player).ok(); // This is okay.
         grid
+    }
+
+    fn check_move(
+        &self,
+        grid: &Grid,
+        legal_moves: &Vec<Coordinate>,
+        player: &Player,
+    ) -> Option<Coordinate> {
+        for coordinate in legal_moves {
+            let next_grid = self.try_move(grid, coordinate, player);
+            for next_coordinate in legal_moves {
+                if next_coordinate != coordinate {
+                    if self
+                        .try_move(&next_grid, next_coordinate, player)
+                        .get_winner()
+                        .is_some()
+                    {
+                        if self.verbosity >= 2 {
+                            println!("{} can set up a check by playing {}", player, coordinate);
+                        }
+                        return Some(*coordinate);
+                    }
+                }
+            }
+        }
+        None
     }
 
     fn forking_move(
@@ -33,18 +75,19 @@ impl ComputerPlayer {
             let next_grid = self.try_move(grid, coordinate, player);
             for next_coordinate in legal_moves {
                 if next_coordinate != coordinate {
-                    if Some(player)
-                        == self
-                            .try_move(&next_grid, next_coordinate, player)
-                            .get_winner()
-                            .as_ref()
+                    if self
+                        .try_move(&next_grid, next_coordinate, player)
+                        .get_winner()
+                        .is_some()
                     {
                         fork_count += 1;
                     }
                 }
             }
             if fork_count > 1 {
-                println!("{} can set up a fork by playing {}", player, coordinate);
+                if self.verbosity >= 2 {
+                    println!("{} can set up a fork by playing {}", player, coordinate);
+                }
                 return Some(*coordinate);
             }
         }
@@ -63,7 +106,9 @@ impl ComputerPlayer {
                 .get_winner()
                 .is_some()
             {
-                println!("{} can win by playing {}", player, coordinate);
+                if self.verbosity >= 2 {
+                    println!("{} can win by playing {}", player, coordinate);
+                }
                 return Some(*coordinate);
             }
         }
@@ -94,12 +139,16 @@ impl Playable for ComputerPlayer {
             .or_else(|| self.forking_move(&grid, &legal_moves, &self.player))
             // Can the other player make a legal move that will cause me to be forked?
             .or_else(|| self.forking_move(&grid, &legal_moves, &self.player.turn()))
+            // Can I at least make a move that will put the other player in check?
+            .or_else(|| self.check_move(&grid, &legal_moves, &self.player))
             // Just make a random move
             .or_else(|| legal_moves.first().cloned())
             .expect("No legal moves!");
 
-        println!("{} chooses {}", self.player, coordinate);
-        println!("");
+        if self.verbosity >= 1 {
+            println!("{} chooses {}", self.player, coordinate);
+            println!("");
+        }
 
         coordinate
     }
