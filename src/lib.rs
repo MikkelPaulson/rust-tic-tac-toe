@@ -1,10 +1,12 @@
 mod computer;
 mod game;
 mod human;
+mod rando;
 
 use computer::ComputerPlayer;
 use game::{Coordinate, Grid, Player};
 use human::HumanPlayer;
+use rando::RandoPlayer;
 
 pub fn run() {
     // Ready player one
@@ -42,11 +44,70 @@ fn play(mut player_x: Box<dyn Playable>, mut player_o: Box<dyn Playable>) -> Gri
             .expect("Illegal move!");
 
         current_player = current_player.turn();
-    };
+    }
 
     grid
 }
 
 trait Playable {
     fn play(&mut self, grid: &Grid) -> Coordinate;
+}
+
+#[cfg(test)]
+mod test_play {
+    use super::*;
+
+    #[test]
+    #[ignore]
+    fn computer_playing_x() {
+        let mut x_wins = 0;
+        let mut o_wins = 0;
+        let mut draws = 0;
+
+        for _ in 0..1000 {
+            let grid = play(
+                Box::new(ComputerPlayer::new_silent(Player::X)),
+                Box::new(RandoPlayer::new()),
+            );
+
+            match grid.get_winner() {
+                Some(Player::X) => x_wins += 1,
+                Some(Player::O) => o_wins += 1,
+                None => draws += 1,
+            }
+        }
+
+        assert_eq!(
+            0, o_wins,
+            "Computer should never lose as X; actual outcome {} wins, {} losses, {} draws",
+            x_wins, o_wins, draws
+        );
+    }
+
+    #[test]
+    #[ignore]
+    fn computer_playing_o() {
+        let mut x_wins = 0;
+        let mut o_wins = 0;
+        let mut draws = 0;
+
+        for _ in 0..1000 {
+            let grid = play(
+                Box::new(RandoPlayer::new()),
+                Box::new(ComputerPlayer::new_silent(Player::O)),
+            );
+
+            match grid.get_winner() {
+                Some(Player::X) => x_wins += 1,
+                Some(Player::O) => o_wins += 1,
+                None => draws += 1,
+            }
+        }
+
+        assert_eq!(
+            0, x_wins,
+            "Computer should never lose as O; actual outcome {} wins, {} losses, {} draws",
+            o_wins, x_wins, draws
+        );
+    }
 }
