@@ -7,17 +7,32 @@ use game::{Coordinate, Grid, Player};
 use human::HumanPlayer;
 
 pub fn run() {
-    let mut grid = Grid::empty();
-
     // Ready player one
-    let mut player_x = ComputerPlayer::new(Player::X);
+    let player_x = ComputerPlayer::new(Player::X);
 
     // Ready player two
-    let mut player_o = HumanPlayer::new(Player::O);
+    let player_o = ComputerPlayer::new(Player::O);
+
+    let final_grid = play(Box::new(player_x), Box::new(player_o));
+
+    println!("");
+
+    if let Some(winner) = final_grid.get_winner() {
+        println!("{} wins!", winner);
+    } else {
+        println!("The game ended in a draw!");
+    }
+
+    println!("");
+    println!("{}", final_grid);
+}
+
+fn play(mut player_x: Box<dyn Playable>, mut player_o: Box<dyn Playable>) -> Grid {
+    let mut grid = Grid::empty();
 
     let mut current_player = Player::X;
 
-    let outcome = loop {
+    while grid.is_in_progress() {
         let coordinate = match current_player {
             Player::X => player_x.play(&grid),
             Player::O => player_o.play(&grid),
@@ -26,25 +41,10 @@ pub fn run() {
         grid.set_space(&coordinate, &current_player)
             .expect("Illegal move!");
 
-        if let Some(winner) = grid.get_winner() {
-            break Some(winner);
-        } else if !grid.has_legal_moves() {
-            break None;
-        }
-
         current_player = current_player.turn();
     };
 
-    println!("");
-
-    if let Some(winner) = outcome {
-        println!("{} wins!", winner);
-    } else {
-        println!("The game ended in a draw!");
-    }
-
-    println!("");
-    println!("{}", grid);
+    grid
 }
 
 trait Playable {
