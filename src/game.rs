@@ -68,6 +68,10 @@ impl Grid {
         }
         false
     }
+
+    pub fn is_in_progress(&self) -> bool {
+        self.has_legal_moves() && self.get_winner().is_none()
+    }
 }
 
 impl fmt::Display for Grid {
@@ -168,24 +172,44 @@ mod test_grid {
 
     #[test]
     fn get_winner() {
-        assert_eq!(
-            None,
-            Grid::new([
-                [Space::O, Space::X, Space::X],
-                [Space::Empty, Space::O, Space::Empty],
-                [Space::Empty, Space::Empty, Space::X],
-            ])
-            .get_winner(),
-        );
-        assert_eq!(
-            Some(Player::O),
-            Grid::new([
-                [Space::O, Space::X, Space::X],
-                [Space::Empty, Space::O, Space::Empty],
-                [Space::Empty, Space::Empty, Space::O],
-            ])
-            .get_winner(),
-        );
+        let grid = Grid::new([
+            [Space::O, Space::X, Space::X],
+            [Space::Empty, Space::O, Space::Empty],
+            [Space::Empty, Space::Empty, Space::X],
+        ]);
+        assert_eq!(None, grid.get_winner());
+        assert!(grid.is_in_progress());
+
+        let grid = Grid::new([
+            [Space::O, Space::X, Space::X],
+            [Space::Empty, Space::O, Space::Empty],
+            [Space::Empty, Space::Empty, Space::O],
+        ]);
+        assert_eq!(Some(Player::O), grid.get_winner());
+        assert!(!grid.is_in_progress());
+    }
+
+    #[test]
+    fn has_legal_moves() {
+        let grid = Grid::empty();
+        assert!(grid.has_legal_moves());
+        assert!(grid.is_in_progress());
+
+        let grid = Grid::new([
+            [Space::X, Space::X, Space::O],
+            [Space::O, Space::Empty, Space::X],
+            [Space::X, Space::O, Space::O],
+        ]);
+        assert!(grid.has_legal_moves());
+        assert!(grid.is_in_progress());
+
+        let grid = Grid::new([
+            [Space::X, Space::X, Space::O],
+            [Space::O, Space::X, Space::X],
+            [Space::X, Space::O, Space::O],
+        ]);
+        assert!(!grid.has_legal_moves());
+        assert!(!grid.is_in_progress());
     }
 
     #[test]
